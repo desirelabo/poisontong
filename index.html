@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>密舌 | Mitsushita</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
 
 <script type="importmap">
     {
@@ -20,6 +20,7 @@
 </script>
 
 <style>
+/* --- CORE VARIABLES --- */
 :root {
     --bg-void: #00050a;
     --gold: #eebb66;
@@ -31,7 +32,6 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; outline: none; }
 
-/* GLOBAL LOCK */
 body {
     background: var(--bg-void); color: var(--white);
     font-family: 'Shippori Mincho', serif;
@@ -40,7 +40,7 @@ body {
 }
 ::-webkit-scrollbar { display: none; }
 
-/* --- LAYERS --- */
+/* --- BACKGROUND --- */
 #bg-geometry {
     position: fixed; inset: -50%; width: 200%; height: 200%;
     background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0 L120 60 L60 120 L0 60 Z' fill='none' stroke='%23eebb66' stroke-width='1.2' opacity='0.5'/%3E%3Ccircle cx='60' cy='60' r='35' fill='none' stroke='%23eebb66' stroke-width='0.8' opacity='0.4'/%3E%3Cpath d='M60 15 L105 60 L60 105 L15 60 Z' fill='none' stroke='%23eebb66' stroke-width='0.6' opacity='0.4'/%3E%3C/svg%3E");
@@ -50,16 +50,16 @@ body {
 }
 @keyframes rotate-bg { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* Global Overlay: Only used for Palette to dim BG. Hidden for Band screens. */
-#bg-overlay {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: radial-gradient(circle at center, rgba(0,5,10,0.3) 0%, rgba(0,5,10,0.9) 100%);
-    opacity: 0; transition: opacity 1.5s ease;
+/* Flash Overlay for Transitions */
+#flash-overlay {
+    position: fixed; inset: 0; z-index: 2000; pointer-events: none;
+    background: white; opacity: 0; transition: opacity 0.1s ease-out;
+    mix-blend-mode: overlay;
 }
 
 #layer-webgl { position: fixed; inset: 0; z-index: 10; pointer-events: none; transition: transform 1.5s var(--ease-IO); }
 
-/* UI CONTAINER: PASS-THROUGH */
+/* UI Container */
 #layer-ui { 
     position: fixed; inset: 0; z-index: 100; 
     transition: opacity 1s; pointer-events: none;
@@ -69,21 +69,20 @@ body {
 .section {
     display: none; position: absolute; inset: 0;
     flex-direction: column; align-items: center; justify-content: center;
-    pointer-events: none; /* Inherit pass-through */
+    pointer-events: none; 
 }
 .section.active { display: flex; }
 
-/* --- CINEMATIC BAND (Top & Breath) --- */
+/* --- CINEMATIC BAND --- */
 .cinematic-band {
     width: 100%;
-    background: rgba(0, 5, 10, 0.2); /* 20% Black */
+    background: rgba(0, 5, 10, 0.3);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     padding: 60px 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     border-top: 1px solid rgba(238, 187, 102, 0.15);
     border-bottom: 1px solid rgba(238, 187, 102, 0.15);
-    box-shadow: 0 0 60px rgba(0,0,0,0.4);
-    pointer-events: auto; /* CATCH CLICKS */
+    pointer-events: auto; /* Catch clicks */
 }
 
 .title-glyph {
@@ -99,15 +98,13 @@ body {
     color: var(--gold);
     border: 1px solid var(--gold); border-radius: 6px;
     position: relative; cursor: pointer; transition: all 0.3s;
-    pointer-events: auto; /* FORCE CLICKABLE */
-    width: 280px; max-width: 80vw; text-align: center; margin: 15px auto;
+    pointer-events: auto; width: 280px; max-width: 80vw; text-align: center; margin: 15px auto;
     box-shadow: 0 0 20px rgba(238, 187, 102, 0.2); display: block;
 }
-.btn-mitsu::after { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(238, 187, 102, 0.3); border-radius: 4px; pointer-events: none; }
 .btn-mitsu:active { transform: scale(0.96); background: var(--gold); color: #000; }
 .btn-secondary { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); color: #ccc; box-shadow: none; }
 
-/* --- PALETTE (Fixed Position) --- */
+/* --- PALETTE --- */
 #sec-palette { justify-content: space-between; padding-bottom: 80px; }
 .palette-text-area {
     width: 100%; height: 30vh; display: flex; align-items: center; justify-content: center;
@@ -125,22 +122,21 @@ body {
     display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start;
     width: 260px; max-width: 90vw;
 }
-/* Cluster Layout */
 .mineral-btn {
-    width: 68px; height: 68px; margin: -6px 8px; /* Cluster */
+    width: 68px; height: 68px; margin: -6px 8px;
     transform: rotate(45deg); 
     border: 1px solid rgba(255,255,255,0.4);
     background: radial-gradient(circle at 50% 50%, var(--gem-light), var(--gem-dark));
     box-shadow: 0 0 15px var(--gem-dark); cursor: pointer; transition: transform 0.2s;
-    pointer-events: auto;
+    pointer-events: auto; position: relative; z-index: 10;
 }
 .mineral-btn:active { transform: rotate(45deg) scale(0.9); }
 .mineral-btn.selected { 
     border-color: #fff; transform: rotate(45deg) scale(1.1); 
-    background: var(--gem-light); box-shadow: 0 0 40px var(--gem-light); z-index: 10; 
+    background: var(--gem-light); box-shadow: 0 0 40px var(--gem-light); z-index: 20; 
 }
 
-/* --- RESULT (Local Scroll) --- */
+/* --- RESULT --- */
 #sec-result {
     display: none; position: absolute; inset: 0;
     overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
@@ -155,7 +151,7 @@ body {
     display: flex; flex-direction: column; align-items: center;
 }
 .result-card {
-    background: rgba(0, 3, 5, 0.85); /* Dark Plate */
+    background: rgba(0, 3, 5, 0.85);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(238, 187, 102, 0.15); border-radius: 4px;
     padding: 40px 30px; width: 100%; max-width: 600px;
@@ -165,16 +161,14 @@ body {
 .result-card.visible { opacity: 1; transform: translateY(0); }
 .diagnosis-text { font-size: 1.1rem; line-height: 2.4; letter-spacing: 0.1em; color: #fff; text-align: left; width: 100%; }
 
-.unseal-wrapper { margin-top: 40px; width: 100%; text-align: center; opacity: 0; transition: opacity 1.0s; }
-.unseal-wrapper.visible { opacity: 1; }
-.checklist-box { width: 100%; margin-top: 40px; display: none; }
-.checklist-box.visible { display: block; }
+.checklist-box { width: 100%; margin-top: 40px; }
 .task-item {
     display: flex; align-items: flex-start; margin-bottom: 20px;
-    opacity: 0; transform: translateY(10px); animation: fade-up 1s forwards;
+    opacity: 0; transform: translateY(10px); transition: all 0.8s ease;
     cursor: pointer; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 4px;
 }
-@keyframes fade-up { to { opacity: 1; transform: translateY(0); } }
+.task-item.visible { opacity: 1; transform: translateY(0); }
+
 .task-check {
     width: 16px; height: 16px; margin-right: 16px; flex-shrink: 0; margin-top: 6px;
     border: 1px solid var(--gold); transform: rotate(45deg); transition: all 0.3s;
@@ -182,8 +176,6 @@ body {
 .task-item.checked .task-check { background: var(--gold); box-shadow: 0 0 15px var(--gold); }
 .task-text { font-size: 1.0rem; line-height: 1.7; color: #ddd; transition: 0.3s; }
 .task-item.checked .task-text { color: #777; text-decoration: line-through; text-decoration-color: var(--gold); }
-.action-area { width: 100%; margin-top: 40px; opacity: 0; transition: opacity 1s; text-align: center; }
-.action-area.visible { opacity: 1; }
 
 /* --- ENDING UI --- */
 #ending-scene {
@@ -192,17 +184,25 @@ body {
     padding-bottom: 15vh; pointer-events: auto;
 }
 #ending-scene.active { display: flex; }
-.relic-name { font-size: 1.6rem; letter-spacing: 0.3em; color: var(--gold); text-shadow: 0 0 25px var(--gold); margin-bottom: 10px; text-align: center; }
-.relic-count { font-size: 0.9rem; letter-spacing: 0.2em; opacity: 0.8; color: #fff; margin-bottom: 40px; text-align: center;}
 
-/* COUNTER */
+.relic-name-box { text-align: center; margin-bottom: 40px; }
+.relic-en { 
+    font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; 
+    color: var(--gold); text-shadow: 0 0 25px var(--gold); 
+    margin-bottom: 8px; letter-spacing: 0.05em;
+}
+.relic-jp { 
+    font-family: 'Shippori Mincho', serif; font-size: 1.0rem; 
+    color: #ccc; letter-spacing: 0.3em; opacity: 0.8;
+}
+
 #play-counter { position: fixed; top: 24px; right: 24px; display: flex; gap: 12px; z-index: 2000; pointer-events: none; }
 </style>
 </head>
 <body>
 
 <div id="bg-geometry"></div>
-<div id="bg-overlay"></div>
+<div id="flash-overlay"></div>
 <div id="layer-webgl"></div>
 
 <div id="layer-ui">
@@ -234,13 +234,13 @@ body {
             <div class="result-card" id="result-card">
                 <div id="out-diag" class="diagnosis-text"></div>
                 
-                <div id="unseal-area" class="unseal-wrapper">
+                <div id="unseal-area" class="unseal-wrapper" style="margin-top:40px; text-align:center; opacity:0; transition:1s;">
                     <button class="btn-mitsu" style="margin-top:0;" onclick="Mitsushita.Director.unseal()">▼ 処方箋を紐解く ▼</button>
                 </div>
                 
                 <div id="check-box" class="checklist-box"></div>
                 
-                <div id="act-area" class="action-area">
+                <div id="act-area" class="action-area" style="width:100%; margin-top:40px; opacity:0; transition:1s; text-align:center;">
                     <button class="btn-mitsu" onclick="Mitsushita.Director.captureRelic()">美しさを記録</button>
                     <button id="btn-retry" class="btn-secondary" onclick="Mitsushita.Director.retry()">もう一回？</button>
                 </div>
@@ -250,9 +250,11 @@ body {
 </div>
 
 <div id="ending-scene">
-    <div id="end-name" class="relic-name"></div>
-    <div id="end-count" class="relic-count"></div>
-    <button class="btn-mitsu" onclick="Mitsushita.Director.captureRelic()">美しさを記録</button>
+    <div id="end-display" class="relic-name-box">
+        <div id="end-en" class="relic-en"></div>
+        <div id="end-jp" class="relic-jp"></div>
+    </div>
+    <button class="btn-mitsu" onclick="Mitsushita.Director.startEndingLoop(Mitsushita.Director.data.history)">クリスタルを愛でる</button>
 </div>
 
 <div id="play-counter">
@@ -266,18 +268,18 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 const Mitsushita = {
     Config: {
         minerals: [
-            { id: 'GARN', name: 'ガーネット', hex: 0xff0000, css: '#8b0000', light:'#ff4d4d', dark:'#4a0000', type: '熱', adj: '重苦しい', key: '執着' },
-            { id: 'MORG', name: 'モルガナイト', hex: 0xffc0cb, css: '#ffb6c1', light:'#fff0f5', dark:'#db7093', type: '熱', adj: '湿った', key: '依存' },
-            { id: 'LAPI', name: 'ラピスラズリ', hex: 0x0000ff, css: '#191970', light:'#4169e1', dark:'#000080', type: '冷', adj: '乾いた', key: '孤独' },
-            { id: 'AQUA', name: 'アクアマリン', hex: 0x00ffff, css: '#7fffd4', light:'#e0ffff', dark:'#20b2aa', type: '静', adj: '透き通った', key: '空虚' },
-            { id: 'MALA', name: 'マラカイト', hex: 0x00ff00, css: '#2e8b57', light:'#90ee90', dark:'#006400', type: '動', adj: '濁った', key: '嫉妬' },
-            { id: 'SAGE', name: 'セージ', hex: 0x9acd32, css: '#9acd32', light:'#adff2f', dark:'#556b2f', type: '静', adj: '静かな', key: '停滞' },
-            { id: 'CITR', name: 'シトリン', hex: 0xffd700, css: '#ffd700', light:'#ffff00', dark:'#daa520', type: '動', adj: '軽い', key: '虚栄' },
-            { id: 'OPAL', name: 'オパール', hex: 0xffffff, css: '#fffff0', light:'#ffffff', dark:'#778899', type: '動', adj: '揺れる', key: '嘘' },
-            { id: 'OBSD', name: 'オブシディアン', hex: 0x222222, css: '#111111', light:'#555555', dark:'#000000', type: '冷', adj: '固い', key: '拒絶' },
-            { id: 'SMOK', name: 'スモーキー', hex: 0x888888, css: '#696969', light:'#c0c0c0', dark:'#2f4f4f', type: '冷', adj: '澱んだ', key: '麻痺' },
-            { id: 'AMET', name: 'アメジスト', hex: 0x800080, css: '#800080', light:'#e6e6fa', dark:'#4b0082', type: '熱', adj: '高い', key: '自尊' },
-            { id: 'IOLI', name: 'アイオライト', hex: 0x483d8b, css: '#483d8b', light:'#6a5acd', dark:'#191970', type: '静', adj: '深い', key: '悲嘆' }
+            { id: 'GARN', name: 'ガーネット', en: 'Garnet', hex: 0xff0000, css: '#8b0000', light:'#ff4d4d', dark:'#4a0000', type: '熱', adj: '重苦しい', key: '執着' },
+            { id: 'MORG', name: 'モルガナイト', en: 'Morganite', hex: 0xffc0cb, css: '#ffb6c1', light:'#fff0f5', dark:'#db7093', type: '熱', adj: '湿った', key: '依存' },
+            { id: 'LAPI', name: 'ラピスラズリ', en: 'Lapis Lazuli', hex: 0x0000ff, css: '#191970', light:'#4169e1', dark:'#000080', type: '冷', adj: '乾いた', key: '孤独' },
+            { id: 'AQUA', name: 'アクアマリン', en: 'Aquamarine', hex: 0x00ffff, css: '#7fffd4', light:'#e0ffff', dark:'#20b2aa', type: '静', adj: '透き通った', key: '空虚' },
+            { id: 'MALA', name: 'マラカイト', en: 'Malachite', hex: 0x00ff00, css: '#2e8b57', light:'#90ee90', dark:'#006400', type: '動', adj: '濁った', key: '嫉妬' },
+            { id: 'SAGE', name: 'セージ', en: 'Sage', hex: 0x9acd32, css: '#9acd32', light:'#adff2f', dark:'#556b2f', type: '静', adj: '静かな', key: '停滞' },
+            { id: 'CITR', name: 'シトリン', en: 'Citrine', hex: 0xffd700, css: '#ffd700', light:'#ffff00', dark:'#daa520', type: '動', adj: '軽い', key: '虚栄' },
+            { id: 'OPAL', name: 'オパール', en: 'Opal', hex: 0xffffff, css: '#fffff0', light:'#ffffff', dark:'#778899', type: '動', adj: '揺れる', key: '嘘' },
+            { id: 'OBSD', name: 'オブシディアン', en: 'Obsidian', hex: 0x222222, css: '#111111', light:'#555555', dark:'#000000', type: '冷', adj: '固い', key: '拒絶' },
+            { id: 'SMOK', name: 'スモーキー', en: 'Smoky Quartz', hex: 0x888888, css: '#696969', light:'#c0c0c0', dark:'#2f4f4f', type: '冷', adj: '澱んだ', key: '麻痺' },
+            { id: 'AMET', name: 'アメジスト', en: 'Amethyst', hex: 0x800080, css: '#800080', light:'#e6e6fa', dark:'#4b0082', type: '熱', adj: '高い', key: '自尊' },
+            { id: 'IOLI', name: 'アイオライト', en: 'Iolite', hex: 0x483d8b, css: '#483d8b', light:'#6a5acd', dark:'#191970', type: '静', adj: '深い', key: '悲嘆' }
         ],
         dailyLimit: 3
     },
@@ -289,7 +291,7 @@ const Mitsushita = {
                 const now = new Date();
                 const reset = new Date(now); reset.setHours(5, 0, 0, 0);
                 if (now < reset) reset.setDate(reset.getDate() - 1);
-                const key = 'mitsu_final_master';
+                const key = 'mitsu_polish_v7';
                 const raw = localStorage.getItem(key);
                 let data = raw ? JSON.parse(raw) : { date: "", count: 0, history: [] };
                 if (data.date !== reset.toDateString()) {
@@ -303,7 +305,7 @@ const Mitsushita = {
             const d = this.checkDaily();
             d.count++;
             d.history.push({ yang: yang.id, yin: yin.id, time: Date.now(), dateStr: new Date().toDateString() });
-            localStorage.setItem('mitsu_final_master', JSON.stringify(d));
+            localStorage.setItem('mitsu_polish_v7', JSON.stringify(d));
             return d;
         },
         generate(yangId, yinId) {
@@ -364,11 +366,11 @@ const Mitsushita = {
                 Mitsushita.Config.minerals.forEach(m => {
                     this.matPool['S_'+m.id] = new THREE.MeshPhysicalMaterial({
                         color: m.hex, metalness: 0.8, roughness: 0.2, wireframe: true, 
-                        emissive: m.hex, emissiveIntensity: 0.5, transparent: true, opacity: 0.3
+                        emissive: m.hex, emissiveIntensity: 0.5, transparent: true, opacity: 0.4
                     });
                     this.matPool['C_'+m.id] = new THREE.MeshPhysicalMaterial({
-                        color: m.hex, emissive: m.hex, emissiveIntensity: 1.0, 
-                        transmission: 0.2, thickness: 2.0, roughness: 0.1, metalness: 0.3, ior: 2.0
+                        color: m.hex, emissive: m.hex, emissiveIntensity: 0.5, // LOWER EMISSIVE to define edges
+                        transmission: 0.2, thickness: 2.0, roughness: 0.2, metalness: 0.5, ior: 1.5
                     });
                 });
 
@@ -423,7 +425,16 @@ const Mitsushita = {
         boostLight(on) { 
             this.lightBoost = on ? 2.5 : 1.0; 
             this.backLight.intensity = on ? 3.0 : 0.0; 
-            this.renderer.toneMappingExposure = on ? 2.5 : 1.0; 
+            this.renderer.toneMappingExposure = on ? 2.0 : 1.0; 
+        },
+        
+        flashTransition(callback) {
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = '1';
+            setTimeout(() => {
+                callback();
+                setTimeout(() => { flash.style.opacity = '0'; }, 300);
+            }, 300);
         },
 
         targetCamZ: 15, targetShellOp: 0.4, targetCoreOp: 1.0, lightBoost: 1.0,
@@ -433,7 +444,7 @@ const Mitsushita = {
             return new Promise(resolve => {
                 const start = Date.now();
                 const anim = () => {
-                    if(!this.isBreathing) { resolve(); return; } // KILL SWITCH
+                    if(!this.isBreathing) { resolve(); return; }
                     const p = Math.min((Date.now() - start) / 4000, 1);
                     this.baseScale = 1.0 - Math.pow(p, 4);
                     if (p < 1) requestAnimationFrame(anim); else { this.baseScale = 0; resolve(); }
@@ -449,17 +460,9 @@ const Mitsushita = {
             const el = document.getElementById('layer-webgl');
             el.style.transition = 'transform 1.5s cubic-bezier(0.65, 0, 0.35, 1)';
             
-            const ov = document.getElementById('bg-overlay');
-            if(targetState === 'palette') {
-                el.style.transform = 'translateY(-25%) scale(0.6)';
-                ov.style.opacity = '0.6'; 
-            } else if(targetState === 'result') {
-                el.style.transform = 'translateY(-15%) scale(1.4)';
-                ov.style.opacity = '0.0'; 
-            } else {
-                el.style.transform = 'none';
-                ov.style.opacity = '0.0'; 
-            }
+            if(targetState === 'palette') el.style.transform = 'translateY(-25%) scale(0.6)';
+            else if(targetState === 'result') el.style.transform = 'translateY(-15%) scale(1.4)';
+            else el.style.transform = 'none';
         },
         
         teleportReset() {
@@ -486,7 +489,7 @@ const Mitsushita = {
             
             if(this.core.material.emissive) {
                 this.core.material.emissive.copy(this.currentColor);
-                this.core.material.emissiveIntensity = 0.5 + (this.lightBoost * 0.8) + (flicker * 0.2);
+                this.core.material.emissiveIntensity = 0.5 + (this.lightBoost * 0.5) + (flicker * 0.1); // Reduced emissive
             }
             if(this.innerLight) {
                 this.innerLight.color.copy(this.currentColor);
@@ -535,21 +538,25 @@ const Mitsushita = {
                 el.style.display = 'flex'; void el.offsetWidth; el.classList.add('active');
             }
         },
-        // CLEAN RESET
         resetUI() {
             document.querySelectorAll('.mineral-btn').forEach(b => b.classList.remove('selected'));
             document.getElementById('pal-inst').classList.remove('hidden');
             
+            // RESET RESULT CARD
             const card = document.getElementById('result-card');
-            card.removeAttribute('style'); // Physics reset
-            card.classList.remove('visible'); 
+            card.removeAttribute('style'); card.classList.remove('visible');
             
+            // RESET BUTTONS
             const btnArea = document.getElementById('unseal-area');
-            btnArea.removeAttribute('style');
-            btnArea.classList.remove('visible'); 
+            btnArea.removeAttribute('style'); btnArea.classList.remove('visible');
             
-            document.getElementById('check-box').classList.remove('visible');
-            document.getElementById('act-area').classList.remove('visible');
+            const actArea = document.getElementById('act-area');
+            actArea.removeAttribute('style'); actArea.classList.remove('visible');
+            
+            // PHYSICS RESET FOR CHECKLIST: Remove and rebuild DOM later
+            const checkContainer = document.getElementById('check-box');
+            checkContainer.innerHTML = ''; 
+            checkContainer.classList.remove('visible');
             
             const res = document.getElementById('sec-result');
             if(res) res.scrollTop = 0;
@@ -575,19 +582,12 @@ const Mitsushita = {
         async startSequence() {
             this.resetUI();
             this.switchSection('sec-breath');
-            
             Mitsushita.Visuals.breathSequence();
-            
-            // TIMEOUT SAFETY
-            setTimeout(() => {
-                this.showPalette(); 
-            }, 3500);
+            setTimeout(() => { this.showPalette(); }, 3500);
         },
         
         showPalette() {
-            // Restore Model State
             Mitsushita.Visuals.restoreModel();
-            
             this.state = 'PALETTE_YANG';
             document.getElementById('pal-inst').innerHTML = '世界と対峙するための<br>「鎧」は何色？';
             
@@ -632,12 +632,13 @@ const Mitsushita = {
             Mitsushita.Config.minerals.forEach(m => html = html.replace(new RegExp(m.name,'g'), `<span class="kw-inject" style="color:${m.light}">${m.name}</span>`));
             document.getElementById('out-diag').innerHTML = html;
             
+            // FRESH DOM FOR CHECKLIST
             const checkContainer = document.getElementById('check-box');
             checkContainer.innerHTML = '';
             res.t.forEach((task, i) => {
                 const item = document.createElement('div');
                 item.className = 'task-item';
-                item.style.animationDelay = `${i * 0.3}s`; 
+                item.style.transitionDelay = `${i * 0.2}s`;
                 item.onclick = () => { item.classList.toggle('checked'); if(item.classList.contains('checked') && navigator.vibrate) navigator.vibrate(20); };
                 item.innerHTML = `<div class="task-check"></div><div class="task-text">${task}</div>`;
                 checkContainer.appendChild(item);
@@ -646,12 +647,9 @@ const Mitsushita = {
             this.switchSection('sec-result');
             Mitsushita.Visuals.boostLight(true); 
 
-            // Reveal Sequence
-            const card = document.getElementById('result-card');
-            const unsealWrapper = document.getElementById('unseal-area');
             setTimeout(() => {
-                card.classList.add('visible');
-                setTimeout(() => unsealWrapper.classList.add('visible'), 500);
+                document.getElementById('result-card').classList.add('visible');
+                setTimeout(() => document.getElementById('unseal-area').classList.add('visible'), 500);
             }, 500);
 
             const d = Mitsushita.Logic.saveHistory(this.data.yang, this.data.yin);
@@ -659,7 +657,7 @@ const Mitsushita = {
             
             const retry = document.getElementById('btn-retry');
             if(d.count >= 3) { 
-                retry.innerText = "眠りにつく（終了）"; retry.onclick = () => this.startEndingLoop(d.history);
+                retry.innerText = "クリスタルを愛でる"; retry.onclick = () => this.startEndingLoop(d.history);
             } else { 
                 retry.innerText = "もう一回？"; retry.onclick = () => this.retry(); 
             }
@@ -671,6 +669,11 @@ const Mitsushita = {
             setTimeout(() => {
                 btnArea.style.display = 'none'; 
                 const cb = document.getElementById('check-box'); cb.classList.add('visible');
+                // FORCE REFLOW TO TRIGGER TRANSITION
+                Array.from(cb.children).forEach(el => {
+                    void el.offsetWidth;
+                    el.classList.add('visible');
+                });
                 setTimeout(() => document.getElementById('act-area').classList.add('visible'), 1500);
             }, 500);
         },
@@ -709,7 +712,6 @@ const Mitsushita = {
             const endScene = document.getElementById('ending-scene');
             endScene.classList.add('active'); 
             
-            document.getElementById('bg-geometry').style.opacity = '0.5';
             Mitsushita.Visuals.boostLight(true);
 
             const todayStr = new Date().toDateString();
@@ -721,16 +723,18 @@ const Mitsushita = {
                 if(idx >= todayHistory.length) idx = 0;
                 
                 const rec = todayHistory[idx];
-                Mitsushita.Visuals.setLoopState(rec.yang, rec.yin);
-                
                 const yang = Mitsushita.Logic.get(rec.yang);
                 const yin = Mitsushita.Logic.get(rec.yin);
                 
-                document.getElementById('end-name').innerText = `${yang.name} と ${yin.name}`;
-                document.getElementById('end-count').innerText = `RELIC 0${idx+1}`;
+                // FLASH TRANSITION
+                Mitsushita.Visuals.flashTransition(() => {
+                    Mitsushita.Visuals.setLoopState(rec.yang, rec.yin);
+                    document.getElementById('end-en').innerText = `${yang.en} & ${yin.en}`;
+                    document.getElementById('end-jp').innerText = `${yang.name} と ${yin.name}`;
+                });
                 
                 idx++;
-                setTimeout(loop, 6000);
+                setTimeout(loop, 7000);
             };
             loop();
         }
